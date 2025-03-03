@@ -57,7 +57,7 @@ def main():
     # Data is located at:
     # "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
     url = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"  # Substitua pela URL real
-    ds = TabularDataFactory.from_delimited_files(path=url)
+    ds = TabularDatasetFactory.from_delimited_files(path=url)
     #ds = ### YOUR CODE HERE ###
     
     x, y = clean_data(ds)
@@ -69,7 +69,8 @@ def main():
     model = LogisticRegression(C=args.C, max_iter=args.max_iter).fit(x_train, y_train)
 
     accuracy = model.score(x_test, y_test)
-    run.log("Accuracy", np.float(accuracy))
+    run.log("Accuracy", float(accuracy))
+    print(accuracy)
 
 if __name__ == '__main__':
     main()
