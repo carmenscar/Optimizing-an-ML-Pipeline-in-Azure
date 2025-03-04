@@ -54,5 +54,5 @@ AutoML automatically tested several models, including Random Forest, Gradient Bo
 4. **Increased Iterations and Hyperparameters**: In this project, the model was trained with a limited number of iterations and hyperparameter combinations to prioritize speed. However, it may be worthwhile to explore more iterations and hyperparameter combinations to potentially achieve better results.
 
 ## Proof of cluster clean up
-I used more than one user to complete the course project. The last cluster related to the final stage of development was deleted, as shown in the attached image. However, it is necessary to verify if there are other clusters that were created earlier during the initial stages of development and need to be deleted.
+I used more than one user to complete the course project. The last cluster related to the final stage of development was deleted, as shown in the attached image. However, it is necessary to verify if there are other clusters in my user that were created earlier during the initial stages of development and need to be deleted.
 ![Cluster Deletion](deleting_cluster.png)
