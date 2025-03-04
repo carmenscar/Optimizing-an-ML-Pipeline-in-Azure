@@ -15,7 +15,7 @@ You can see the Pipeline Architecture in the image below:
 - Evaluate the dataset using a custom **Scikit-learn Logistic Regression model**.
 
 ### Step 2: Hyperparameter Tuning with HyperDrive
-- Create a **Jupyter Notebook** to orchestrate the experiment.
+- Create a **Jupyter Notebook** to orchestrate the experiment (udacity-project.ipynb).
 - Use **HyperDrive** to automate the search for the best hyperparameters for the Logistic Regression model.
 - Define the hyperparameter search space and apply an early stopping policy to optimize the training process.
 
@@ -40,9 +40,14 @@ You can see the Pipeline Architecture in the image below:
 This project aims to compare the results of using **HyperDrive** and **AutoML** in Azure Machine Learning. The dataset contains data about bank marketing campaigns, and the goal is to predict whether a client will subscribe to a term deposit (binary classification).
 
 - **Best HyperDrive Model**: Logistic Regression with an accuracy of **90.88%**.
-- **Best AutoML Model**: [Insert Model Name] with an accuracy of **91.67%**.
+- **Best AutoML Model**: VotingEnsemble with an accuracy of **91.67%**.
 
 The results do not show a statistically significant difference between the two approaches.
+
+Below, there is a GUI image from the best Hyperdrive model:
+![gui](images/best_trial_HD.png)
+
+The results from all the AutoML model can be found in the notebook cell outputs of `udacity-project.ipynb` (the orchestrator notebook).
 
 ## Scikit-learn Pipeline
 ### Pipeline Architecture:
