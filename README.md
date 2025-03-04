@@ -55,4 +55,4 @@ AutoML automatically tested several models, including Random Forest, Gradient Bo
 
 ## Proof of cluster clean up
 I used more than one user to complete the course project. The last cluster related to the final stage of development was deleted, as shown in the attached image. However, it is necessary to verify if there are other clusters in my user that were created earlier during the initial stages of development and need to be deleted.
-![Cluster Deletion](deleting_cluster.png)
+![Cluster Deletion](images/deleting_cluster.png)
