@@ -1,17 +1,70 @@
-nao funciona:
-TabularDataset
-{
-  "definition": "EnginelessDataflow:\n---\ntype: mltable\npaths:\n  - pattern: \"azureml://subscriptions/aa7cf8e8-d23f-4bce-a7b9-1f0b4e0ac8ee/resourcegroups/aml-quickstarts-274781/workspaces/quick-starts-ws-274781/datastores/workspaceblobstore/paths/managed-dataset/c0b95faa-b78f-4954-8485-a75b7021231b/\"\ntransformations:\n  - read_parquet:\n      path_column: Path\n      include_path_column: false\nmetadata:\n  infer_column_types: \"False\"\n",
-  "registration": {
-    "id": "caec767c-8aba-43d6-9d5e-81b01dd5eaac",
-    "name": "cleaned_bankmarketing_data",
-    "version": 1,
-    "workspace": "Workspace.create(name='quick-starts-ws-274781', subscription_id='aa7cf8e8-d23f-4bce-a7b9-1f0b4e0ac8ee', resource_group='aml-quickstarts-274781')"
-  }
-}
+from train import clean_data
+from azureml.data.dataset_factory import TabularDatasetFactory
+from azureml.core import Dataset, Workspace, Datastore
+import pandas as pd
+import os
 
-antes da limpeza funciona e esta salvo assim:
-TabularDataset
-{
-  "definition": "EnginelessDataflow:\n---\ntype: mltable\npaths:\n  - pattern: \"wasbs://automl-sample-notebook-data@automlsamplenotebookdata.blob.core.windows.net/bankmarketing_train.csv\"\ntransformations:\n  - read_delimited:\n      path_column: Path\n      include_path_column: false\n      encoding: utf8\n      support_multi_line: false\n      delimiter: \",\"\n      empty_as_string: false\n      partition_size: 20971520\n      header: all_files_same_headers\n      infer_column_types: false\n  - convert_column_types:\n      - columns: loan\n        column_type: string\n      - columns: emp.var.rate\n        column_type: float\n      - columns: previous\n        column_type: int\n      - columns: contact\n        column_type: string\n      - columns: duration\n        column_type: int\n      - columns: default\n        column_type: string\n      - columns: month\n        column_type: string\n      - columns: cons.price.idx\n        column_type: float\n      - columns: pdays\n        column_type: int\n      - columns: euribor3m\n        column_type: float\n      - columns: y\n        column_type: string\n      - columns: job\n        column_type: string\n      - columns: age\n        column_type: int\n      - columns: marital\n        column_type: string\n      - columns: education\n        column_type: string\n      - columns: cons.conf.idx\n        column_type: float\n      - columns: campaign\n        column_type: int\n      - columns: day_of_week\n        column_type: string\n      - columns: housing\n        column_type: string\n      - columns: nr.employed\n        column_type: float\n      - columns: poutcome\n        column_type: string\nmetadata:\n  infer_column_types: \"False\"\n"
-}
+# Carrega o workspace
+ws = Workspace.from_config()
+
+# Carrega o dataset
+url = "https://automlsamplenotebookdata.blob.core.windows.net/automl-sample-notebook-data/bankmarketing_train.csv"
+ds = TabularDatasetFactory.from_delimited_files(path=url)
+
+# Limpa os dados
+x, y = clean_data(ds)
+
+# Combina x e y em um único DataFrame
+cleaned_data = pd.concat([x, y], axis=1)
+
+# Salva o DataFrame em um arquivo CSV temporário
+temp_csv_path = "temp_cleaned_data.csv"
+cleaned_data.to_csv(temp_csv_path, index=False)
+
+# Obtém o datastore padrão do workspace
+datastore = ws.get_default_datastore()
+
+# Define o caminho no datastore para salvar o arquivo CSV
+datastore_path = "cleaned_data/temp_cleaned_data.csv"
+
+# Salva o arquivo CSV no datastore
+datastore.upload_files(
+    files=[temp_csv_path],  # Arquivo local temporário
+    target_path="cleaned_data",  # Pasta no datastore
+    overwrite=True
+)
+
+# Remove o arquivo CSV temporário
+os.remove(temp_csv_path)
+
+# Cria o dataset a partir do arquivo CSV no datastore
+cleaned_ds = TabularDatasetFactory.from_delimited_files(
+    path=[(datastore, datastore_path)],  # Caminho no datastore
+    separator=',',  # Delimitador CSV
+    header=True,    # Primeira linha é o cabeçalho
+    infer_column_types=True  # Infere os tipos de coluna automaticamente
+)
+
+# Registra o dataset no workspace
+cleaned_ds = cleaned_ds.register(
+    workspace=ws,
+    name="cleaned_bankmarketing_data",
+    description="Dados limpos do bank marketing"
+)
+
+print("Dataset registrado com sucesso:", cleaned_ds.name)
+
+# Configura o AutoML com os dados limpos
+automl_config = AutoMLConfig(
+    experiment_timeout_minutes=30,
+    task='classification',
+    primary_metric='accuracy',
+    training_data=cleaned_ds,  # Usa o dataset registrado
+    label_column_name='y',     # Coluna target
+    n_cross_validations=2,
+    compute_target=compute_target
+)
+
+# Submete o experimento do AutoML
+remote_run = exp.submit(automl_config, show_output=True)
+remote_run.wait_for_completion()
