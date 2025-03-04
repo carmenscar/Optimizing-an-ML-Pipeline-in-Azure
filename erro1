@@ -1,0 +1,17 @@
+nao funciona:
+TabularDataset
+{
+  "definition": "EnginelessDataflow:\n---\ntype: mltable\npaths:\n  - pattern: \"azureml://subscriptions/aa7cf8e8-d23f-4bce-a7b9-1f0b4e0ac8ee/resourcegroups/aml-quickstarts-274781/workspaces/quick-starts-ws-274781/datastores/workspaceblobstore/paths/managed-dataset/c0b95faa-b78f-4954-8485-a75b7021231b/\"\ntransformations:\n  - read_parquet:\n      path_column: Path\n      include_path_column: false\nmetadata:\n  infer_column_types: \"False\"\n",
+  "registration": {
+    "id": "caec767c-8aba-43d6-9d5e-81b01dd5eaac",
+    "name": "cleaned_bankmarketing_data",
+    "version": 1,
+    "workspace": "Workspace.create(name='quick-starts-ws-274781', subscription_id='aa7cf8e8-d23f-4bce-a7b9-1f0b4e0ac8ee', resource_group='aml-quickstarts-274781')"
+  }
+}
+
+antes da limpeza funciona e esta salvo assim:
+TabularDataset
+{
+  "definition": "EnginelessDataflow:\n---\ntype: mltable\npaths:\n  - pattern: \"wasbs://automl-sample-notebook-data@automlsamplenotebookdata.blob.core.windows.net/bankmarketing_train.csv\"\ntransformations:\n  - read_delimited:\n      path_column: Path\n      include_path_column: false\n      encoding: utf8\n      support_multi_line: false\n      delimiter: \",\"\n      empty_as_string: false\n      partition_size: 20971520\n      header: all_files_same_headers\n      infer_column_types: false\n  - convert_column_types:\n      - columns: loan\n        column_type: string\n      - columns: emp.var.rate\n        column_type: float\n      - columns: previous\n        column_type: int\n      - columns: contact\n        column_type: string\n      - columns: duration\n        column_type: int\n      - columns: default\n        column_type: string\n      - columns: month\n        column_type: string\n      - columns: cons.price.idx\n        column_type: float\n      - columns: pdays\n        column_type: int\n      - columns: euribor3m\n        column_type: float\n      - columns: y\n        column_type: string\n      - columns: job\n        column_type: string\n      - columns: age\n        column_type: int\n      - columns: marital\n        column_type: string\n      - columns: education\n        column_type: string\n      - columns: cons.conf.idx\n        column_type: float\n      - columns: campaign\n        column_type: int\n      - columns: day_of_week\n        column_type: string\n      - columns: housing\n        column_type: string\n      - columns: nr.employed\n        column_type: float\n      - columns: poutcome\n        column_type: string\nmetadata:\n  infer_column_types: \"False\"\n"
+}
