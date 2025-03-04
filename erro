@@ -1,0 +1,186 @@
+Running on remote compute: optmizing-ml
+The validation results are as follows:
+Service failed to retrieve the data. Ensure data correctness and availability.
+---------------------------------------------------------------------------
+ValidationException                       Traceback (most recent call last)
+Cell In[16], line 4
+      1 # Submit your automl run
+      2 
+      3 ### YOUR CODE HERE ###
+----> 4 remote_run = exp.submit(automl_config, show_output =True)
+      5 remote_run.wait_for_completion()
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/core/experiment.py:238, in Experiment.submit(self, config, tags, **kwargs)
+    236 submit_func = get_experiment_submit(config)
+    237 with self._log_context("submit config {}".format(config.__class__.__name__)):
+--> 238     run = submit_func(config, self.workspace, self.name, **kwargs)
+    239 if tags is not None:
+    240     run.set_tags(tags)
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/automlconfig.py:103, in _automl_static_submit(automl_config_object, workspace, experiment_name, **kwargs)
+    100 settings = _azureautomlsettings.AzureAutoMLSettings(experiment=experiment, **settings_dict)
+    102 with log_server.new_log_context(parent_run_id=parent_run_id):
+--> 103     automl_run = _start_execution(
+    104         experiment,
+    105         settings,
+    106         fit_params,
+    107         run_config,
+    108         compute_target,
+    109         parent_run_id,
+    110         show_output)
+    112     automl_run.add_properties(global_tracking_info_registry.gather_all(settings.path))
+    114     return automl_run
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/automlconfig.py:248, in _start_execution(experiment, settings_obj, fit_params, run_config, compute_target, parent_run_id, show_output)
+    246             logger.info(msg)
+    247             print(msg)
+--> 248     automl_run = _default_execution(experiment, settings_obj, fit_params, False, show_output)
+    250 return automl_run
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/automlconfig.py:134, in _default_execution(experiment, settings_obj, fit_params, legacy_local, show_output, parent_run_id)
+    132 experiment_state.console_writer.show_output = show_output
+    133 driver = ExperimentDriver(experiment_state)
+--> 134 updated_params = driver.create_parent_run(**fit_params)
+    135 fit_params.update(updated_params)
+    136 return driver.start(**fit_params)
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/_experiment_drivers/experiment_driver.py:205, in ExperimentDriver.create_parent_run(self, run_configuration, compute_target, X, y, sample_weight, X_valid, y_valid, sample_weight_valid, cv_splits_indices, existing_run, training_data, validation_data, test_data, _script_run, parent_run_id, kwargs)
+    185 X, y, sample_weight, X_valid, y_valid, sample_weight_valid = dataset_utilities.convert_inputs(
+    186     X, y, sample_weight, X_valid,
+    187     y_valid, sample_weight_valid
+    188 )
+    190 updated_params = {
+    191     "X": X,
+    192     "y": y,
+   (...)
+    202     "kwargs": kwargs
+    203 }
+--> 205 self.driver.create_parent_run(
+    206     run_configuration,
+    207     compute_target,
+    208     X,
+    209     y,
+    210     sample_weight,
+    211     X_valid,
+    212     y_valid,
+    213     sample_weight_valid,
+    214     cv_splits_indices,
+    215     existing_run,
+    216     training_data,
+    217     validation_data,
+    218     test_data,
+    219     _script_run,
+    220     parent_run_id,
+    221     kwargs)
+    222 assert self.experiment_state.current_run
+    223 self.experiment_state.parent_run_id = self.experiment_state.current_run.id
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/_experiment_drivers/remote_experiment_launcher.py:55, in RemoteExperimentLauncher.create_parent_run(self, run_configuration, compute_target, X, y, sample_weight, X_valid, y_valid, sample_weight_valid, cv_splits_indices, existing_run, training_data, validation_data, test_data, _script_run, parent_run_id, kwargs)
+     51     run_configuration.target = compute_target
+     52 self.experiment_state.console_writer.println(
+     53     "Running on remote compute: " + str(run_configuration.target)
+     54 )
+---> 55 driver_utilities.create_remote_parent_run(
+     56     self.experiment_state,
+     57     run_configuration, X=X, y=y, sample_weight=sample_weight, X_valid=X_valid, y_valid=y_valid,
+     58     sample_weight_valid=sample_weight_valid, cv_splits_indices=cv_splits_indices,
+     59     training_data=training_data, validation_data=validation_data, test_data=test_data)
+     60 assert self.experiment_state.current_run
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/_experiment_drivers/driver_utilities.py:365, in create_remote_parent_run(experiment_state, run_config, X, y, sample_weight, X_valid, y_valid, sample_weight_valid, cv_splits_indices, training_data, validation_data, test_data)
+    357 run_config = modify_run_configuration(experiment_state.automl_settings, run_config, logger)
+    359 # Uncomment to fall back to curated envs for changing environment behavior
+    360 # run_config_object = modify_run_configuration_curated(self.automl_settings,
+    361 #                                                      run_config_object,
+    362 #                                                      self.experiment.workspace,
+    363 #                                                      logger)
+--> 365 parent_run_dto = create_and_validate_parent_run_dto(
+    366     experiment_state=experiment_state,
+    367     target=run_config.target,
+    368     training_data=training_data,
+    369     validation_data=validation_data,
+    370     X=X,
+    371     y=y,
+    372     sample_weight=sample_weight,
+    373     X_valid=X_valid,
+    374     y_valid=y_valid,
+    375     sample_weight_valid=sample_weight_valid,
+    376     cv_splits_indices=cv_splits_indices,
+    377     test_data=test_data,
+    378 )
+    380 try:
+    381     logger.info("Start creating parent run.")
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/_experiment_drivers/driver_utilities.py:80, in create_and_validate_parent_run_dto(experiment_state, target, training_data, validation_data, X, y, sample_weight, X_valid, y_valid, sample_weight_valid, cv_splits_indices, parent_run_id, test_data)
+     75 dataprep_json = serialize_datasets_to_json(X, X_valid, y, y_valid, sample_weight, sample_weight_valid,
+     76                                            training_data, validation_data, test_data, cv_splits_indices)
+     78 parent_run_dto = create_parent_run_dto(experiment_state, target, dataprep_json, parent_run_id)
+---> 80 validate_input(experiment_state, parent_run_dto)
+     82 return parent_run_dto
+
+File /anaconda/envs/azureml_py38/lib/python3.10/site-packages/azureml/train/automl/_experiment_drivers/driver_utilities.py:155, in validate_input(experiment_state, parent_run_dto)
+    153         errors.append(result.message)
+    154 msg = "Validation error(s): {}".format(validation_results.error.details)
+--> 155 raise ValidationException._with_error(AzureMLError.create(
+    156     ExecutionFailure, operation_name="data/settings validation", error_details=msg)
+    157 )
+
+ValidationException: ValidationException:
+	Message: Failed to execute the requested operation: data/settings validation. Error details: Validation error(s): [{
+    "additional_properties": {
+        "debugInfo": null
+    },
+    "code": "UserError",
+    "severity": 2,
+    "message": "Service failed to retrieve the data. Ensure data correctness and availability.",
+    "message_format": "Service failed to retrieve the data. Ensure data correctness and availability.",
+    "message_parameters": {
+        "0": "System.Collections.Generic.Dictionary`2[System.String,System.String]"
+    },
+    "reference_code": null,
+    "details_uri": null,
+    "target": "training_data",
+    "details": [
+        {
+            "additional_properties": {
+                "debugInfo": null
+            },
+            "code": null,
+            "severity": null,
+            "message": "null",
+            "message_format": null,
+            "message_parameters": {},
+            "reference_code": null,
+            "details_uri": null,
+            "target": null,
+            "details": [],
+            "inner_error": null,
+            "additional_info": null
+        }
+    ],
+    "inner_error": {
+        "additional_properties": {},
+        "code": "BadArgument",
+        "inner_error": {
+            "additional_properties": {},
+            "code": "ArgumentInvalid",
+            "inner_error": {
+                "additional_properties": {},
+                "code": "DatasetIncorrectState",
+                "inner_error": null
+            }
+        }
+    },
+    "additional_info": null
+}]
+	InnerException: None
+	ErrorResponse 
+{
+    "error": {
+        "code": "UserError",
+        "message": "Failed to execute the requested operation: data/settings validation. Error details: Validation error(s): [{\n    \"additional_properties\": {\n        \"debugInfo\": null\n    },\n    \"code\": \"UserError\",\n    \"severity\": 2,\n    \"message\": \"Service failed to retrieve the data. Ensure data correctness and availability.\",\n    \"message_format\": \"Service failed to retrieve the data. Ensure data correctness and availability.\",\n    \"message_parameters\": {\n        \"0\": \"System.Collections.Generic.Dictionary`2[System.String,System.String]\"\n    },\n    \"reference_code\": null,\n    \"details_uri\": null,\n    \"target\": \"training_data\",\n    \"details\": [\n        {\n            \"additional_properties\": {\n                \"debugInfo\": null\n            },\n            \"code\": null,\n            \"severity\": null,\n            \"message\": \"null\",\n            \"message_format\": null,\n            \"message_parameters\": {},\n            \"reference_code\": null,\n            \"details_uri\": null,\n            \"target\": null,\n            \"details\": [],\n            \"inner_error\": null,\n            \"additional_info\": null\n        }\n    ],\n    \"inner_error\": {\n        \"additional_properties\": {},\n        \"code\": \"BadArgument\",\n        \"inner_error\": {\n            \"additional_properties\": {},\n            \"code\": \"ArgumentInvalid\",\n            \"inner_error\": {\n                \"additional_properties\": {},\n                \"code\": \"DatasetIncorrectState\",\n                \"inner_error\": null\n            }\n        }\n    },\n    \"additional_info\": null\n}]",
+        "inner_error": {
+            "code": "ExecutionFailure"
+        }
+    }
+}
